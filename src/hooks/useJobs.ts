@@ -29,7 +29,8 @@ export function useJobs() {
       const response: PaginacaoResponse = await buscarVagas(filtros);
       setVagas(response.vagas);
       setTotal(response.total);
-      setTotalPages(response.total_pages);
+      // Adaptar ao formato da API (original ou nova)
+      setTotalPages(response.total_pages ?? response.totalPaginas ?? 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar vagas');
       // Fallback: tentar carregar JSON offline

@@ -19,8 +19,10 @@ const STATUS_OPTIONS = [
 ];
 
 export function JobCard({ vaga, onStatusChange, onIgnorar, onRestaurar, onFavoritar }: JobCardProps) {
-  const scoreClass = getScoreClass(vaga.score_compatibilidade);
-  const scoreLabel = getScoreLabel(vaga.score_compatibilidade);
+  // Adaptar ao formato da API (original ou nova)
+  const score = vaga.score_compatibilidade ?? vaga.score ?? 0;
+  const scoreClass = getScoreClass(score);
+  const scoreLabel = getScoreLabel(score);
 
   return (
     <div className={`job-card ${vaga.ignorada ? 'ignored' : ''}`}>
@@ -28,7 +30,7 @@ export function JobCard({ vaga, onStatusChange, onIgnorar, onRestaurar, onFavori
         <div className="job-card-title-row">
           <h3 className="job-title">{vaga.titulo}</h3>
           <span className={`score-badge ${scoreClass}`}>
-            {vaga.score_compatibilidade} {scoreLabel}
+            {score} {scoreLabel}
           </span>
         </div>
         <div className="job-meta">

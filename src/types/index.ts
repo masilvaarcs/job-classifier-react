@@ -20,19 +20,31 @@ export interface Vaga {
   status_usuario: 'pendente' | 'candidatado' | 'entrevista' | 'rejeitado' | 'contratado';
   ignorada: boolean;
   pra_mim: boolean;
-  score_compatibilidade: number;
+  // Formato novo
+  score_compatibilidade?: number;
+  // Formato original da API
+  score?: number;
   data_verificacao: string;
   ativa: boolean;
   notas: string;
 }
 
 export interface Stats {
-  total_vagas: number;
-  total_plataformas: number;
-  vagas_por_plataforma: Record<string, number>;
-  vagas_por_tipo: Record<string, number>;
-  vagas_por_status: Record<string, number>;
-  ultima_coleta: string;
+  // Formato novo
+  total_vagas?: number;
+  total_plataformas?: number;
+  vagas_por_plataforma?: Record<string, number>;
+  vagas_por_tipo?: Record<string, number>;
+  vagas_por_status?: Record<string, number>;
+  ultima_coleta?: string;
+  // Formato original da API
+  total?: number;
+  ignoradas?: number;
+  praMim?: number;
+  ultimas24h?: number;
+  porPlataforma?: Record<string, number>;
+  porTipo?: Record<string, number>;
+  porStatus?: Record<string, number>;
 }
 
 export interface Plataforma {
@@ -62,7 +74,12 @@ export interface Filtros {
 export interface PaginacaoResponse {
   vagas: Vaga[];
   total: number;
-  page: number;
-  per_page: number;
-  total_pages: number;
+  // Formato novo
+  page?: number;
+  per_page?: number;
+  total_pages?: number;
+  // Formato original da API
+  pagina?: number;
+  porPagina?: number;
+  totalPaginas?: number;
 }

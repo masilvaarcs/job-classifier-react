@@ -15,10 +15,15 @@ export function StatsBar({ stats, loading }: StatsBarProps) {
     );
   }
 
+  // Adaptar ao formato da API (original ou nova)
+  const totalVagas = stats.total_vagas ?? stats.total ?? 0;
+  const totalPlataformas = stats.total_plataformas ?? Object.keys(stats.vagas_por_plataforma ?? stats.porPlataforma ?? {}).length;
+  const ultimaColeta = stats.ultima_coleta ?? 'N/A';
+
   const statCards = [
-    { label: 'Total de Vagas', value: stats.total_vagas.toLocaleString(), color: '#2563eb' },
-    { label: 'Plataformas', value: stats.total_plataformas, color: '#8b5cf6' },
-    { label: 'Última Coleta', value: stats.ultima_coleta || 'N/A', color: '#10b981' },
+    { label: 'Total de Vagas', value: totalVagas.toLocaleString(), color: '#2563eb' },
+    { label: 'Plataformas', value: totalPlataformas, color: '#8b5cf6' },
+    { label: 'Última Coleta', value: ultimaColeta, color: '#10b981' },
   ];
 
   return (
