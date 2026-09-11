@@ -6,8 +6,15 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
+      // gRPC-Web -> serviço primário job-classifier-dotnet (porta 8000)
+      '/dotnet': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dotnet/, ''),
+      },
+      // Exportação Excel no microserviço Python (fora do escopo RPC v1)
+      '/exportar': {
+        target: 'http://127.0.0.1:8001',
         changeOrigin: true,
       },
     },
