@@ -6,7 +6,8 @@ import { Pagination } from './components/Pagination/Pagination';
 import { useJobs } from './hooks/useJobs';
 import { useStats } from './hooks/useStats';
 import { useFilters } from './hooks/useFilters';
-import { atualizarStatusVaga, ignorarVaga, restaurarVaga, toggleFavoritar } from './services/api';
+import { atualizarStatusVaga, ignorarVaga, restaurarVaga, toggleFavoritar, importarDados } from './services/api';
+import { useState } from 'react';
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
 
   const { stats, loading: statsLoading } = useStats();
   const { filtros, buscaExpandida, setBuscaExpandida, atualizar } = useFilters();
+  const [sincronizando, setSincronizando] = useState(false);
 
   const handleFiltroChange = (novosFiltros: Parameters<typeof atualizar>[0]) => {
     atualizar(novosFiltros);
@@ -65,6 +67,22 @@ function App() {
     }
   };
 
+  const handleSincronizar = async () => {
+    setSincronizando(true);
+    try {
+      const result = await importarDados();
+      alert(`Sincronização concluída: ${result.importadas} novas, ${result.atualizadas} atualizadas`);
+      recarregar();
+      // Atualiza stats também
+      // O useStats não tem recarregar, mas o useJobs recarrega faz a lista atualizar
+    } catch (err) {
+      console.error('Erro ao sincronizar:', err);
+      alert('Erro ao sincronizar: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
+    } finally {
+      setSincronizando(false);
+    }
+  };
+
   return (
     <div className="app">
       <Header />
@@ -75,6 +93,8 @@ function App() {
           onFiltroChange={handleFiltroChange}
           buscaExpandida={buscaExpandida}
           onToggleBusca={() => setBuscaExpandida(!buscaExpandida)}
+          onSincronizar={handleSincronizar}
+          sincronizando={sincronizando}
         />
         <JobList
           vagas={vagas}

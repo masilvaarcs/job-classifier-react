@@ -186,8 +186,53 @@ export async function statusBusca(): Promise<BuscaStatus> {
 
 // === Importação ===
 
-export async function importarDados(): Promise<void> {
-  await client.importVagas({ vagas: [] });
+export interface VagaImportada {
+  titulo: string;
+  empresa: string;
+  localizacao: string;
+  salario: string;
+  modalidade: string;
+  publicado: string;
+  dataPublicacao: string;
+  tipoTrabalho: string;
+  descricao: string;
+  link: string;
+  jobId: string;
+  plataforma: string;
+}
+
+export async function importarDados(): Promise<{ importadas: number; atualizadas: number }> {
+  // 1. Busca dados do Python (FastAPI) - todos os JSONs salvos
+  const res = await fetch('/dados', { method: 'GET' });
+  if (!res.ok) throw new Error('Falha ao buscar dados do Python');
+  const { vagas } = await res.json();
+
+  if (!vagas || vagas.length === 0) {
+    return { importadas: 0, atualizadas: 0 };
+  }
+
+  // 2. Converte para formato do .NET ImportVagas
+  const vagasImportadas: VagaImportada[] = vagas.map((v: any) => ({
+    titulo: v.titulo || '',
+    empresa: v.empresa || '',
+    localizacao: v.localizacao || '',
+    salario: v.salario || '',
+    modalidade: v.modalidade || '',
+    publicado: v.publicado || '',
+    dataPublicacao: v.data_publicacao || '',
+    tipoTrabalho: v.tipo_trabalho || 'NAO IDENTIFICADO',
+    descricao: v.descricao || '',
+    link: v.link || '',
+    jobId: v.job_id || '',
+    plataforma: v.plataforma || '',
+  }));
+
+  // 3. Chama .NET ImportVagas via gRPC
+  const importRes = await client.importVagas({ vagas: vagasImportadas });
+  return {
+    importadas: importRes.importadas,
+    atualizadas: importRes.atualizadas,
+  };
 }
 
 export async function calcularScores(): Promise<void> {

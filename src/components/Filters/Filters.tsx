@@ -6,6 +6,8 @@ interface FiltersProps {
   onFiltroChange: (novosFiltros: Partial<Filtros>) => void;
   buscaExpandida: boolean;
   onToggleBusca: () => void;
+  onSincronizar: () => void;
+  sincronizando: boolean;
 }
 
 const PERIODOS = [
@@ -22,7 +24,7 @@ const TIPOS = ['Todos', '🟢 Remoto', '🟡 Híbrido', '🟠 Presencial'];
 
 const STATUS_LISTA = ['Todos', 'Pendente', 'Candidatado', 'Entrevista', 'Rejeitado', 'Contratado'];
 
-export function Filters({ filtros, onFiltroChange, buscaExpandida, onToggleBusca }: FiltersProps) {
+export function Filters({ filtros, onFiltroChange, buscaExpandida, onToggleBusca, onSincronizar, sincronizando }: FiltersProps) {
   return (
     <div className="filters-container">
       {/* Período */}
@@ -121,6 +123,17 @@ export function Filters({ filtros, onFiltroChange, buscaExpandida, onToggleBusca
           onClick={() => onFiltroChange({ ignoradas: !filtros.ignoradas })}
         >
           🚫 Ignoradas
+        </button>
+      </div>
+
+      {/* Sincronização */}
+      <div className="filter-group">
+        <button
+          className="filter-btn-sync"
+          onClick={onSincronizar}
+          disabled={sincronizando}
+        >
+          {sincronizando ? '⏳ Sincronizando...' : '🔄 Sincronizar'}
         </button>
       </div>
     </div>
