@@ -201,38 +201,52 @@ export interface VagaImportada {
   plataforma: string;
 }
 
-export async function importarDados(): Promise<{ importadas: number; atualizadas: number }> {
-  // 1. Busca dados do Python (FastAPI) - todos os JSONs salvos
-  const res = await fetch('/dados', { method: 'GET' });
-  if (!res.ok) throw new Error('Falha ao buscar dados do Python');
-  const { vagas } = await res.json();
+const PLATAFORMAS_JSON = [
+  { plataforma: 'LinkedIn' },
+  { plataforma: 'Indeed' },
+  { plataforma: 'Jooble' },
+  { plataforma: 'Freelancer' },
+  { plataforma: 'Glassdoor' },
+  { plataforma: 'BNE' },
+];
 
-  if (!vagas || vagas.length === 0) {
-    return { importadas: 0, atualizadas: 0 };
+export async function importarDados(): Promise<{ importadas: number; atualizadas: number }> {
+  let totalImportadas = 0;
+  let totalAtualizadas = 0;
+
+  // Busca dados por plataforma (cada JSON separado) para ter o nome da plataforma
+  for (const { plataforma } of PLATAFORMAS_JSON) {
+    try {
+      const res = await fetch(`/dados/${encodeURIComponent(plataforma)}`, { method: 'GET' });
+      if (!res.ok) continue;
+
+      const { vagas } = await res.json();
+      if (!vagas || vagas.length === 0) continue;
+
+      const vagasImportadas: VagaImportada[] = vagas.map((v: any) => ({
+        titulo: v.titulo || '',
+        empresa: v.empresa || '',
+        localizacao: v.localizacao || '',
+        salario: v.salario || '',
+        modalidade: v.modalidade || '',
+        publicado: v.publicado || '',
+        dataPublicacao: v.data_publicacao || '',
+        tipoTrabalho: v.tipo_trabalho || 'NAO IDENTIFICADO',
+        descricao: v.descricao || '',
+        link: v.link || '',
+        jobId: v.job_id || '',
+        plataforma, // <-- usa o nome da plataforma do arquivo
+      }));
+
+      const importRes = await client.importVagas({ vagas: vagasImportadas });
+      totalImportadas += importRes.importadas;
+      totalAtualizadas += importRes.atualizadas;
+    } catch (err) {
+      console.warn(`Erro ao importar ${plataforma}:`, err);
+    }
   }
 
-  // 2. Converte para formato do .NET ImportVagas
-  const vagasImportadas: VagaImportada[] = vagas.map((v: any) => ({
-    titulo: v.titulo || '',
-    empresa: v.empresa || '',
-    localizacao: v.localizacao || '',
-    salario: v.salario || '',
-    modalidade: v.modalidade || '',
-    publicado: v.publicado || '',
-    dataPublicacao: v.data_publicacao || '',
-    tipoTrabalho: v.tipo_trabalho || 'NAO IDENTIFICADO',
-    descricao: v.descricao || '',
-    link: v.link || '',
-    jobId: v.job_id || '',
-    plataforma: v.plataforma || '',
-  }));
-
-  // 3. Chama .NET ImportVagas via gRPC
-  const importRes = await client.importVagas({ vagas: vagasImportadas });
-  return {
-    importadas: importRes.importadas,
-    atualizadas: importRes.atualizadas,
-  };
+  return { importadas: totalImportadas, atualizadas: totalAtualizadas };
 }
 
 export async function calcularScores(): Promise<void> {
